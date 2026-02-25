@@ -47,13 +47,13 @@ class LoginWindow:
         self.login_password.pack()
         
         # Buttons
-        button_frame = ttk.Frame(self.window)
+        button_frame = tk.Frame(self.window)
         button_frame.pack(pady=20)
         
-        login_btn = ttk.Button(button_frame, text="Login", command=self._on_login)
+        login_btn = tk.Button(button_frame, text="Login", command=self._on_login, width=15)
         login_btn.pack(side=tk.LEFT, padx=5)
         
-        register_btn = ttk.Button(button_frame, text="Create Account", command=self._show_register_view)
+        register_btn = tk.Button(button_frame, text="Create Account", command=self._show_register_view, width=15)
         register_btn.pack(side=tk.LEFT, padx=5)
         
         # Bind Enter key
@@ -108,13 +108,13 @@ class LoginWindow:
         self.reg_confirm.pack()
         
         # Buttons
-        button_frame = ttk.Frame(self.window)
+        button_frame = tk.Frame(self.window)
         button_frame.pack(pady=20)
         
-        register_btn = ttk.Button(button_frame, text="Register", command=self._on_register)
+        register_btn = tk.Button(button_frame, text="Register", command=self._on_register, width=15)
         register_btn.pack(side=tk.LEFT, padx=5)
         
-        back_btn = ttk.Button(button_frame, text="Back", command=self._show_login_view)
+        back_btn = tk.Button(button_frame, text="Back", command=self._show_login_view, width=15)
         back_btn.pack(side=tk.LEFT, padx=5)
         
         # Bind Enter key
