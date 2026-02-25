@@ -1,5 +1,7 @@
 # Coffee Finder
 
+This project was created with GitHub Copilot.
+
 Find nearby coffee shops and cafes from your current location, an address, or lat/lng coordinates. Coffee Finder supports three interfaces: a command-line tool, a graphical desktop app, and a system tray integration. It uses OpenStreetMap Overpass API by default and optionally integrates with Google Places for enhanced ratings and reviews.
 
 ## Features
