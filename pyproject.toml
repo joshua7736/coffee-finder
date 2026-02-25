@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "coffee-finder"
+version = "0.1.0"
+description = "Find nearby coffee shops from your location"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+  "requests>=2.28",
+]
+
+[project.scripts]
+coffee-finder = "coffee_finder.main:main"
+coffee-finder-gui = "coffee_finder.gui:main"
+coffee-finder-tray = "coffee_finder.tray:main"

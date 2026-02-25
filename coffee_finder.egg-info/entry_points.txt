@@ -1,0 +1,2 @@
+[console_scripts]
+coffee-finder = coffee_finder.main:main

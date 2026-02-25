@@ -1,0 +1,5 @@
+# Development and build dependencies for Coffee Finder
+# Install with: python -m pip install -r requirements-dev.txt
+
+pyinstaller>=5.10
+pytest>=7.0

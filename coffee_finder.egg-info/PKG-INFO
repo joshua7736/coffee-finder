@@ -1,0 +1,46 @@
+Metadata-Version: 2.4
+Name: coffee-finder
+Version: 0.1.0
+Summary: Find nearby coffee shops from your location
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Requires-Dist: requests>=2.28
+
+# Coffee Finder
+
+A small Python CLI to find coffee/cafe places near a location. It prefers Google Places if you set `GOOGLE_PLACES_API_KEY` in your environment; otherwise it falls back to OpenStreetMap Overpass queries.
+
+Usage examples
+
+- Use detected location (IP-based):
+
+```bash
+python -m coffee_finder
+```
+
+- Provide lat,lng:
+
+```bash
+python -m coffee_finder --latlng 40.7128,-74.0060 --radius 1200 --limit 10
+```
+
+- Provide address (geocoded via Nominatim):
+
+```bash
+python -m coffee_finder --address "1600 Amphitheatre Parkway, Mountain View, CA"
+```
+
+Google Places
+
+To use Google Places (better ratings), set environment variable `GOOGLE_PLACES_API_KEY`.
+
+Install
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+Notes
+
+- Overpass may return no ratings; Google returns ratings when available.
+- Use `--min-rating` to filter results (works only where ratings are present).
