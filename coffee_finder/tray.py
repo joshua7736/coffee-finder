@@ -35,17 +35,20 @@ class TrayApp:
 
     def _open_gui(self, icon=None, item=None):
         if self.root is None:
-            # create GUI in main thread
+            # This shouldn't happen, but handle gracefully
+            return
+        
+        # Create a new window for the GUI
+        gui_window = tk.Toplevel(self.root)
+        app = CoffeeFinderGUI(gui_window, self.username)
+        gui_window.deiconify()
+
+    def _get_hidden_root(self):
+        """Get or create the hidden root window."""
+        if self.root is None:
             self.root = tk.Tk()
-            app = CoffeeFinderGUI(self.root, self.username)
-            self.root.deiconify()
-            threading.Thread(target=self.root.mainloop, daemon=True).start()
-        else:
-            try:
-                self.root.deiconify()
-                self.root.lift()
-            except Exception:
-                pass
+            self.root.withdraw()
+        return self.root
 
     def _open_settings(self, icon=None, item=None):
         """Open settings dialog from tray menu."""
@@ -57,8 +60,7 @@ class TrayApp:
                 pass
 
         if self.root is None:
-            self.root = tk.Tk()
-            self.root.withdraw()
+            return
 
         dlg = tk.Toplevel(self.root)
         dlg.title("Coffee Finder Settings")
