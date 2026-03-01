@@ -203,7 +203,7 @@ On first launch, you'll be prompted to create an account or log in with your cre
 - **Settings**: Configure cache TTL and API key
 - **Quit**: Exit the application
 
-The app starts hidden; click the tray icon to access the menu.
+The app starts hidden; **right‑click** (or use the menu key) on the tray icon to access the menu. Left-click no longer launches the GUI directly, preventing accidental opens.
 
 ## Configuration
 

@@ -135,6 +135,8 @@ class TrayApp:
             pystray.MenuItem("Quit", self._quit, default=False),
         )
         self.icon = pystray.Icon("coffee-finder", image, "Coffee Finder", menu)
+        # prevent left-click from invoking default menu item (Open)
+        self.icon.HAS_DEFAULT_ACTION = False
 
         # run the tray icon in a background thread; mainloop remains on root
         t = threading.Thread(target=self.icon.run, daemon=True)
