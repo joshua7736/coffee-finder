@@ -128,16 +128,25 @@ class TrayApp:
         self.root.withdraw()
 
         image = _make_image()
+        # build menu; no default action so clicks just show menu
         menu = pystray.Menu(
-            pystray.MenuItem("Open", self._open_gui),
-            pystray.MenuItem("Settings", self._open_settings),
-            pystray.MenuItem("Quit", self._quit),
+            pystray.MenuItem("Open", self._open_gui, default=False),
+            pystray.MenuItem("Settings", self._open_settings, default=False),
+            pystray.MenuItem("Quit", self._quit, default=False),
         )
         self.icon = pystray.Icon("coffee-finder", image, "Coffee Finder", menu)
 
-        # run the tray icon; keep GUI mainloop as main thread by running icon in separate thread
+        # run the tray icon in a background thread; mainloop remains on root
         t = threading.Thread(target=self.icon.run, daemon=True)
         t.start()
+
+        # optionally intercept left-clicks to show popup menu instead of default action
+        def on_click(icon, item):
+            try:
+                icon.menu.run(icon, None)
+            except Exception:
+                pass
+        self.icon.onclick = on_click
 
         # run tk mainloop in main thread
         try:
