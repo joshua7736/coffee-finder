@@ -126,11 +126,6 @@ python -m coffee_finder --latlng 40.7128,-74.0060 --radius 1500 --limit 5
 python -m coffee_finder --address "1600 Amphitheatre Parkway, Mountain View, CA" --limit 20
 ```
 
-#### Search by what3words location:
-```bash
-python -m coffee_finder --what3words "///light.dog.cat" --limit 15
-```
-
 #### Search by explicit lat/lng:
 ```bash
 python -m coffee_finder --lat 51.5074 --lng -0.1278 --radius 2000
@@ -146,15 +141,10 @@ python -m coffee_finder --latlng 40.7128,-74.0060 --min-rating 4.0 --limit 10
 --latlng LAT,LNG          Search location as "latitude,longitude"
 --lat LAT --lng LNG       Alternative way to specify coordinates
 --address ADDRESS         Address to geocode (uses Nominatim API)
---what3words WORDS        what3words location (e.g., ///light.dog.cat)
-                            (requires WHAT3WORDS_API_KEY env var)
 --radius METERS           Search radius in meters (default: 1000)
 --limit COUNT             Maximum results to return (default: 10)
 --min-rating RATING       Minimum rating filter (Google Places only)
 ```
-
-> **Note:** The what3words feature relies on the official API.  Set
-> `WHAT3WORDS_API_KEY` in your environment before invoking the CLI or GUI.
 
 ### Graphical User Interface (GUI)
 
@@ -173,7 +163,7 @@ When you launch the GUI for the first time, you'll be prompted to create an acco
 - Multi-user support: Each account maintains separate home location and saved places
 
 **Main Features:**
-- Input fields for lat/lng, address, what3words location, radius, and result limit
+- Input fields for lat/lng, address, radius, and result limit
 - Real-time search with status updates
 - Results displayed in a scrollable list
 - Double-click any result to open location in Google Maps
@@ -182,8 +172,7 @@ When you launch the GUI for the first time, you'll be prompted to create an acco
 **Search Input Options:**
 - **Lat,Lng**: Enter two comma-separated numbers (e.g., `40.7128,-74.0060`)
 - **Address**: Type any address (e.g., `1600 Amphitheatre Parkway, Mountain View, CA`)
-- **What3Words**: Enter three-word location code like `///light.dog.cat` (requires a what3words API key; set `WHAT3WORDS_API_KEY` in your environment or configure in settings).  Without a key the app will raise an error.
-- Leave all three blank to auto-detect your location via IP geolocation
+- Leave both blank to auto-detect your location via IP geolocation
 
 **Home Location Management:**
 - **Load Home**: Quickly load your saved home location into the search field

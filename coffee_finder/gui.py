@@ -11,7 +11,7 @@ from typing import Optional
 
 from .config import get_cache_ttl, get_google_api_key, set_cache_ttl, set_google_api_key
 from .database import get_home_location, set_home_location, save_place, get_saved_places, delete_saved_place
-from .utils import parse_latlng, parse_what3words
+from .utils import parse_latlng
 from .providers import choose_provider
 from .login import show_login
 
@@ -38,20 +38,16 @@ class CoffeeFinderGUI:
         self.address_var = tk.StringVar()
         ttk.Entry(frm, textvariable=self.address_var, width=30).grid(row=1, column=1, sticky="ew")
 
-        ttk.Label(frm, text="What3Words").grid(row=2, column=0, sticky="w")
-        self.what3words_var = tk.StringVar()
-        ttk.Entry(frm, textvariable=self.what3words_var, width=30).grid(row=2, column=1, sticky="ew")
-
-        ttk.Label(frm, text="Radius (m)").grid(row=3, column=0, sticky="w")
+        ttk.Label(frm, text="Radius (m)").grid(row=2, column=0, sticky="w")
         self.radius_var = tk.IntVar(value=1000)
-        ttk.Entry(frm, textvariable=self.radius_var, width=10).grid(row=3, column=1, sticky="w")
+        ttk.Entry(frm, textvariable=self.radius_var, width=10).grid(row=2, column=1, sticky="w")
 
-        ttk.Label(frm, text="Limit").grid(row=4, column=0, sticky="w")
+        ttk.Label(frm, text="Limit").grid(row=3, column=0, sticky="w")
         self.limit_var = tk.IntVar(value=10)
-        ttk.Entry(frm, textvariable=self.limit_var, width=10).grid(row=4, column=1, sticky="w")
+        ttk.Entry(frm, textvariable=self.limit_var, width=10).grid(row=3, column=1, sticky="w")
 
         btn_frame = ttk.Frame(frm)
-        btn_frame.grid(row=5, column=0, columnspan=2, pady=(8, 4))
+        btn_frame.grid(row=4, column=0, columnspan=2, pady=(8, 4))
         self.search_btn = ttk.Button(btn_frame, text="Search", command=self.on_search)
         self.search_btn.pack(side="left")
         home_btn = ttk.Button(btn_frame, text="Load Home", command=self.load_home)
@@ -62,17 +58,17 @@ class CoffeeFinderGUI:
         self.settings_btn.pack(side="left", padx=(8,0))
 
         self.status_var = tk.StringVar(value="Ready")
-        ttk.Label(frm, textvariable=self.status_var).grid(row=6, column=0, columnspan=2, sticky="w")
+        ttk.Label(frm, textvariable=self.status_var).grid(row=5, column=0, columnspan=2, sticky="w")
 
         # results listbox
         self.results = tk.Listbox(frm, width=60, height=12)
-        self.results.grid(row=7, column=0, columnspan=2, pady=(8, 0))
+        self.results.grid(row=6, column=0, columnspan=2, pady=(8, 0))
         self.results.bind("<Double-Button-1>", self.on_open_map)
         self.results.bind("<Button-3>", self.on_right_click)  # Right-click context menu
 
         # result action buttons
         result_btn_frame = ttk.Frame(frm)
-        result_btn_frame.grid(row=8, column=0, columnspan=2, pady=(4, 0))
+        result_btn_frame.grid(row=7, column=0, columnspan=2, pady=(4, 0))
         ttk.Button(result_btn_frame, text="Save Selected", command=self.save_selected_place).pack(side="left")
         ttk.Button(result_btn_frame, text="View Saved", command=self.view_saved_places).pack(side="left", padx=(4,0))
 
@@ -94,7 +90,6 @@ class CoffeeFinderGUI:
     def on_search(self):
         latlng = self.latlng_var.get().strip()
         address = self.address_var.get().strip()
-        what3words = self.what3words_var.get().strip()
         radius = self.radius_var.get()
         limit = self.limit_var.get()
 
@@ -115,9 +110,6 @@ class CoffeeFinderGUI:
                     if not res:
                         raise RuntimeError("Address not found")
                     lat = float(res[0]["lat"]) ; lng = float(res[0]["lon"])
-                elif what3words:
-                    # convert what3words to coordinates
-                    lat, lng = parse_what3words(what3words)
                 else:
                     # fallback to ip detection
                     import requests
