@@ -31,6 +31,7 @@ class TrayApp:
         self.gui_window: Optional[tk.Toplevel] = None
         self.settings_window: Optional[tk.Toplevel] = None
         self.icon: Optional[pystray.Icon] = None
+        self._icon_thread: Optional[threading.Thread] = None
 
     def _open_gui(self, icon=None, item=None):
         if self.gui_window is None or not tk.Toplevel.winfo_exists(self.gui_window):
@@ -95,16 +96,40 @@ class TrayApp:
         dlg.protocol("WM_DELETE_WINDOW", on_close)
 
     def _quit(self, icon=None, item=None):
-        try:
-            if self.icon:
-                self.icon.stop()
-        except Exception:
-            pass
-        try:
-            if self.root:
-                self.root.quit()
-        except Exception:
-            pass
+        def _do_quit():
+            try:
+                if self.icon:
+                    try:
+                        self.icon.stop()
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+            try:
+                if self.gui_window:
+                    try:
+                        self.gui_window.destroy()
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+            try:
+                if self.root:
+                    try:
+                        self.root.quit()
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+
+        # Ensure shutdown runs on Tk main thread
+        if self.root:
+            try:
+                self.root.after(0, _do_quit)
+            except Exception:
+                _do_quit()
+        else:
+            _do_quit()
 
     def run(self):
         # show login first
@@ -133,6 +158,7 @@ class TrayApp:
         # start icon in separate thread, keep tk mainloop on main thread
         t = threading.Thread(target=self.icon.run, daemon=True)
         t.start()
+        self._icon_thread = t
 
         try:
             self.root.mainloop()
