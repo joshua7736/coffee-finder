@@ -15,4 +15,3 @@ dependencies = [
 [project.scripts]
 coffee-finder = "coffee_finder.main:main"
 coffee-finder-gui = "coffee_finder.gui:main"
-coffee-finder-tray = "coffee_finder.tray:main"

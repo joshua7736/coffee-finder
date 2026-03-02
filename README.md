@@ -2,12 +2,12 @@
 
 This project was created with GitHub Copilot.
 
-Find nearby coffee shops and cafes from your current location, an address, or lat/lng coordinates. Coffee Finder supports three interfaces: a command-line tool, a graphical desktop app, and a system tray integration. It uses OpenStreetMap Overpass API by default and optionally integrates with Google Places for enhanced ratings and reviews.
+Find nearby coffee shops and cafes from your current location, an address, or lat/lng coordinates. Coffee Finder supports two interfaces: a command-line tool and a graphical desktop app. It uses OpenStreetMap Overpass API by default and optionally integrates with Google Places for enhanced ratings and reviews.
 
 ## Features
 
 - **User accounts**: Create an account with email, username, and password to store your preferences securely
-- **Multiple interfaces**: CLI, GUI (Tkinter), and system tray icon
+- **Multiple interfaces**: CLI and GUI (Tkinter)
 - **Flexible location input**: GPS coordinates, address, or auto-detect via IP geolocation
 - **Dual data provider strategy**: 
   - OpenStreetMap Overpass API (free, no key required, with local caching)
@@ -57,10 +57,9 @@ python -m pip install -r requirements-dev.txt
 build_installer.bat
 ```
 
-This creates three .exe files in `dist/`:
+This creates two .exe files in `dist/`:
 - `coffee-finder.exe` - CLI with console
 - `coffee-finder-gui.exe` - GUI application (main)
-- `coffee-finder-tray.exe` - System tray version
 
 **Optional: Create a Windows installer (MSI/EXE)**
 
@@ -86,7 +85,6 @@ bash build_installer.sh
 This creates standalone executables in `dist/`:
 - `coffee-finder` - CLI
 - `coffee-finder-gui` - GUI application (main)
-- `coffee-finder-tray` - System tray version
 
 **macOS App Bundle**
 
@@ -209,7 +207,7 @@ The app starts hidden; **right‑click** (or use the menu key) on the tray icon 
 
 ### User Accounts
 
-Every user must create an account to use Coffee Finder's GUI or tray interfaces.
+Every user must create an account to use Coffee Finder's GUI.
 
 **Account requirements:**
 - **Email**: Valid email address (used to verify account uniqueness)
@@ -242,8 +240,8 @@ export GOOGLE_PLACES_API_KEY=your_api_key_here
 python -m coffee_finder --latlng 40.7128,-74.0060
 ```
 
-**Via settings dialog (GUI/Tray):**
-- Open the GUI or Settings from tray menu
+**Via settings dialog (GUI):**
+- Open the GUI Settings menu
 - Enter your API key in the "Google Places API Key" field
 - Click Save
 
