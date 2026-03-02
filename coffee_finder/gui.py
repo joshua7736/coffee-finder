@@ -81,7 +81,7 @@ class CoffeeFinderGUI:
         
         # Auto-load home on startup if preference is set
         from .database import get_preference_bool
-        if get_preference_bool("auto_load_home", False):
+        if get_preference_bool(f"auto_load_home_{self.username}", False):
             self.root.after(100, self.load_home)
 
     def set_status(self, text: str):
@@ -176,17 +176,17 @@ class CoffeeFinderGUI:
         btn_save = ttk.Button(dlg, text="Save", command=on_save)
         btn_save.grid(row=2, column=0, columnspan=2, pady=(6,12))
         
-        # Auto-load home preference
+        # Auto-load home preference (user-specific)
         from .database import get_preference_bool, set_preference_bool
         ttk.Label(dlg, text="Auto-load home on startup").grid(row=3, column=0, sticky="w", padx=8, pady=6)
-        auto_home_var = tk.BooleanVar(value=get_preference_bool("auto_load_home", False))
+        auto_home_var = tk.BooleanVar(value=get_preference_bool(f"auto_load_home_{self.username}", False))
         ttk.Checkbutton(dlg, variable=auto_home_var).grid(row=3, column=1, sticky="w", padx=8, pady=6)
         
         # Update on_save to also save preferences
         orig_on_save = on_save
         def on_save_with_prefs():
             orig_on_save()
-            set_preference_bool("auto_load_home", auto_home_var.get())
+            set_preference_bool(f"auto_load_home_{self.username}", auto_home_var.get())
         
         btn_save.config(command=on_save_with_prefs)
 
@@ -203,7 +203,7 @@ class CoffeeFinderGUI:
 
     def load_home(self):
         """Load saved home location into search field."""
-        home = get_home_location()
+        home = get_home_location(self.username)
         if home:
             self.latlng_var.set(f"{home['lat']},{home['lng']}")
             self.address_var.set("")
@@ -230,7 +230,7 @@ class CoffeeFinderGUI:
                     raise RuntimeError("Address not found")
                 lat = float(res[0]["lat"])
                 lng = float(res[0]["lon"])
-            set_home_location(lat, lng, address or latlng)
+            set_home_location(lat, lng, self.username, address or latlng)
             messagebox.showinfo("Saved", f"Home location saved: {lat},{lng}")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to save home: {str(e)}")
@@ -244,7 +244,7 @@ class CoffeeFinderGUI:
         idx = sel[0]
         p = self.places[idx]
         try:
-            save_place(p.get("name"), p.get("lat"), p.get("lng"), 
+            save_place(p.get("name"), p.get("lat"), p.get("lng"), self.username,
                       address=p.get("address") or "", rating=p.get("rating"))
             messagebox.showinfo("Saved", f"Saved: {p.get('name')}")
         except Exception as e:
@@ -252,7 +252,7 @@ class CoffeeFinderGUI:
 
     def view_saved_places(self):
         """Show dialog with saved favorite places."""
-        saved = get_saved_places()
+        saved = get_saved_places(self.username)
         if not saved:
             messagebox.showinfo("No Saved Places", "No favorites yet. Save places from search results.")
             return
@@ -284,7 +284,7 @@ class CoffeeFinderGUI:
             sel = lb.curselection()
             if sel:
                 idx = sel[0]
-                delete_saved_place(saved[idx]['id'])
+                delete_saved_place(saved[idx]['id'], self.username)
                 lb.delete(idx)
                 messagebox.showinfo("Deleted", "Place removed from favorites.")
         

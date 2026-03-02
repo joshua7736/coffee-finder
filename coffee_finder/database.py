@@ -31,21 +31,24 @@ def _init_db():
     conn = _get_conn()
     cursor = conn.cursor()
     
-    # Home location
+    # Home location (per user)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS home_location (
             id INTEGER PRIMARY KEY,
+            username TEXT NOT NULL,
             name TEXT,
             lat REAL NOT NULL,
             lng REAL NOT NULL,
-            saved_at TEXT DEFAULT CURRENT_TIMESTAMP
+            saved_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(username)
         )
     """)
     
-    # Saved coffee places
+    # Saved coffee places (per user)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS saved_places (
             id INTEGER PRIMARY KEY,
+            username TEXT NOT NULL,
             name TEXT NOT NULL,
             lat REAL NOT NULL,
             lng REAL NOT NULL,
@@ -72,23 +75,24 @@ _init_db()
 
 # ===== Home Location =====
 
-def set_home_location(lat: float, lng: float, name: str = "Home") -> None:
-    """Save home location."""
+def set_home_location(lat: float, lng: float, username: str, name: str = "Home") -> None:
+    """Save home location for a specific user."""
     conn = _get_conn()
     cursor = conn.cursor()
-    # Clear previous home
-    cursor.execute("DELETE FROM home_location")
-    cursor.execute("INSERT INTO home_location (name, lat, lng) VALUES (?, ?, ?)", 
-                   (name, lat, lng))
+    # Delete existing home location for this user, then insert new one
+    cursor.execute("DELETE FROM home_location WHERE username = ?", (username,))
+    cursor.execute("INSERT INTO home_location (username, name, lat, lng) VALUES (?, ?, ?, ?)", 
+                   (username, name, lat, lng))
     conn.commit()
     conn.close()
 
-def get_home_location() -> Optional[Dict]:
-    """Retrieve home location."""
+def get_home_location(username: str) -> Optional[Dict]:
+    """Retrieve home location for a specific user."""
     try:
         conn = _get_conn()
         cursor = conn.cursor()
-        cursor.execute("SELECT name, lat, lng, saved_at FROM home_location LIMIT 1")
+        cursor.execute("SELECT name, lat, lng, saved_at FROM home_location WHERE username = ? LIMIT 1", 
+                      (username,))
         row = cursor.fetchone()
         conn.close()
         if row:
@@ -97,47 +101,48 @@ def get_home_location() -> Optional[Dict]:
     except Exception:
         return None
 
-def clear_home_location() -> None:
-    """Clear saved home location."""
+def clear_home_location(username: str) -> None:
+    """Clear saved home location for a specific user."""
     conn = _get_conn()
-    conn.execute("DELETE FROM home_location")
+    conn.execute("DELETE FROM home_location WHERE username = ?", (username,))
     conn.commit()
     conn.close()
 
 # ===== Saved Places =====
 
-def save_place(name: str, lat: float, lng: float, address: str = "", 
+def save_place(name: str, lat: float, lng: float, username: str, address: str = "", 
                rating: Optional[float] = None, source: str = "user") -> None:
-    """Save a coffee place."""
+    """Save a coffee place for a specific user."""
     conn = _get_conn()
     cursor = conn.cursor()
     cursor.execute("""
-        INSERT INTO saved_places (name, lat, lng, address, rating, source)
-        VALUES (?, ?, ?, ?, ?, ?)
-    """, (name, lat, lng, address, rating, source))
+        INSERT INTO saved_places (username, name, lat, lng, address, rating, source)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (username, name, lat, lng, address, rating, source))
     conn.commit()
     conn.close()
 
-def get_saved_places() -> List[Dict]:
-    """Retrieve all saved coffee places."""
+def get_saved_places(username: str) -> List[Dict]:
+    """Retrieve all saved coffee places for a specific user."""
     try:
         conn = _get_conn()
         cursor = conn.cursor()
         cursor.execute("""
             SELECT id, name, lat, lng, address, rating, source, saved_at 
             FROM saved_places 
+            WHERE username = ?
             ORDER BY saved_at DESC
-        """)
+        """, (username,))
         rows = cursor.fetchall()
         conn.close()
         return [dict(row) for row in rows]
     except Exception:
         return []
 
-def delete_saved_place(place_id: int) -> None:
-    """Delete a saved place by ID."""
+def delete_saved_place(place_id: int, username: str) -> None:
+    """Delete a saved place by ID (must belong to the user)."""
     conn = _get_conn()
-    conn.execute("DELETE FROM saved_places WHERE id = ?", (place_id,))
+    conn.execute("DELETE FROM saved_places WHERE id = ? AND username = ?", (place_id, username))
     conn.commit()
     conn.close()
 
