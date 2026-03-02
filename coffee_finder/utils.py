@@ -1,5 +1,6 @@
 import math
 from typing import Tuple
+import os
 import requests
 
 
@@ -25,42 +26,49 @@ def parse_latlng(value: str) -> Tuple[float, float]:
 
 
 def parse_what3words(value: str) -> Tuple[float, float]:
-    """Parse a what3words location (e.g., '///light.dog.cat') and return (lat, lng).
-    
-    Uses OpenStreetMap Nominatim API which supports what3words format for free.
+    """Convert a what3words address into latitude and longitude.
+
+    This function requires an API key from what3words.  Set the key in the
+    environment variable ``WHAT3WORDS_API_KEY`` before calling.  The free
+    developer plan is sufficient for casual use; see
+    https://developer.what3words.com for details.  Without a key a
+    :class:`RuntimeError` is raised.
+
+    The input may include leading slashes (e.g. ``///index.home.raft``); they
+    are stripped automatically.  A ``ValueError`` is raised if the format is
+    clearly invalid or the API returns no coordinates.
     """
-    # normalize input: remove leading /// if present
+    # normalize input: remove leading slashes
     words = value.lstrip('/').strip()
     if not words:
         raise ValueError("Invalid what3words format")
-    
-    # Ensure proper format for nominatim
-    query = f"///{words}" if not words.startswith("///") else words
-    
+
+    api_key = os.getenv("WHAT3WORDS_API_KEY")
+    if not api_key:
+        raise RuntimeError(
+            "what3words API key not set; please export WHAT3WORDS_API_KEY"
+        )
+
     try:
-        # Nominatim supports what3words format natively (free API)
         response = requests.get(
-            "https://nominatim.openstreetmap.org/search",
-            params={
-                "q": query,
-                "format": "json",
-                "limit": 1
-            },
-            headers={"User-Agent": "coffee-finder-app"},
-            timeout=10
+            "https://api.what3words.com/v3/convert-to-coordinates",
+            params={"words": words, "key": api_key},
+            timeout=5,
         )
         response.raise_for_status()
-        results = response.json()
-        
-        if not results:
-            raise ValueError(f"what3words location not found: {query}")
-        
-        result = results[0]
-        lat = float(result.get("lat"))
-        lng = float(result.get("lon"))
-        
-        return lat, lng
-    except requests.RequestException as e:
-        raise RuntimeError(f"Failed to resolve what3words location: {e}")
+        data = response.json()
+
+        if "error" in data:
+            # propagate error message for debugging
+            raise ValueError(f"what3words error: {data['error'].get('message')}")
+
+        coords = data.get("coordinates", {})
+        lat = coords.get("lat")
+        lng = coords.get("lng")
+        if lat is None or lng is None:
+            raise ValueError("Could not convert what3words to coordinates")
+        return float(lat), float(lng)
+    except requests.RequestException as exc:
+        raise RuntimeError(f"Failed to resolve what3words location: {exc}")
 
 
