@@ -2,7 +2,7 @@
 
 This project was created with GitHub Copilot.
 
-Find nearby coffee shops and cafes from your current location, an address, or lat/lng coordinates. Coffee Finder supports two interfaces: a command-line tool and a graphical desktop app. It uses OpenStreetMap Overpass API by default and optionally integrates with Google Places for enhanced ratings and reviews.
+Find nearby coffee shops and cafes from your current location, an address, or lat/lng coordinates. Coffee Finder supports three interfaces: a command-line tool, graphical desktop app, and a system tray icon. It uses OpenStreetMap Overpass API by default and optionally integrates with Google Places for enhanced ratings and reviews.
 
 ## Features
 
@@ -240,8 +240,8 @@ export GOOGLE_PLACES_API_KEY=your_api_key_here
 python -m coffee_finder --latlng 40.7128,-74.0060
 ```
 
-**Via settings dialog (GUI):**
-- Open the GUI Settings menu
+**Via settings dialog (GUI or System Tray):**
+- Open the Settings menu
 - Enter your API key in the "Google Places API Key" field
 - Click Save
 
