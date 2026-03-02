@@ -27,34 +27,40 @@ def parse_latlng(value: str) -> Tuple[float, float]:
 def parse_what3words(value: str) -> Tuple[float, float]:
     """Parse a what3words location (e.g., '///light.dog.cat') and return (lat, lng).
     
-    Uses the free what3words API (limited to 60 requests/minute without API key).
+    Uses OpenStreetMap Nominatim API which supports what3words format for free.
     """
     # normalize input: remove leading /// if present
     words = value.lstrip('/').strip()
     if not words:
         raise ValueError("Invalid what3words format")
     
+    # Ensure proper format for nominatim
+    query = f"///{words}" if not words.startswith("///") else words
+    
     try:
-        # Call what3words API (free tier, no key required but rate-limited)
+        # Nominatim supports what3words format natively (free API)
         response = requests.get(
-            "https://api.what3words.com/v3/convert-to-coordinates",
-            params={"words": words, "key": "fallback"},  # fallback key for free tier
-            timeout=5
+            "https://nominatim.openstreetmap.org/search",
+            params={
+                "q": query,
+                "format": "json",
+                "limit": 1
+            },
+            headers={"User-Agent": "coffee-finder-app"},
+            timeout=10
         )
         response.raise_for_status()
-        data = response.json()
+        results = response.json()
         
-        if "error" in data:
-            raise ValueError(f"what3words error: {data['error'].get('message', 'invalid location')}")
+        if not results:
+            raise ValueError(f"what3words location not found: {query}")
         
-        coordinates = data.get("coordinates", {})
-        lat = coordinates.get("lat")
-        lng = coordinates.get("lng")
+        result = results[0]
+        lat = float(result.get("lat"))
+        lng = float(result.get("lon"))
         
-        if lat is None or lng is None:
-            raise ValueError("Could not convert what3words to coordinates")
-        
-        return float(lat), float(lng)
+        return lat, lng
     except requests.RequestException as e:
         raise RuntimeError(f"Failed to resolve what3words location: {e}")
+
 

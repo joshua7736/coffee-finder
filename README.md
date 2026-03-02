@@ -178,7 +178,7 @@ When you launch the GUI for the first time, you'll be prompted to create an acco
 **Search Input Options:**
 - **Lat,Lng**: Enter two comma-separated numbers (e.g., `40.7128,-74.0060`)
 - **Address**: Type any address (e.g., `1600 Amphitheatre Parkway, Mountain View, CA`)
-- **What3Words**: Enter three-word location code like `///light.dog.cat` (free, but conversion happens via external API)
+- **What3Words**: Enter three-word location code like `///light.dog.cat` (resolved via OpenStreetMap Nominatim, free, no API key required)
 - Leave all three blank to auto-detect your location via IP geolocation
 
 **Home Location Management:**
