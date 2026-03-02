@@ -26,6 +26,35 @@ def _get_conn():
     conn.row_factory = sqlite3.Row
     return conn
 
+def _migrate_db():
+    """Migrate database schema if needed."""
+    conn = _get_conn()
+    cursor = conn.cursor()
+    
+    # Check if home_location table exists and has username column
+    try:
+        cursor.execute("PRAGMA table_info(home_location)")
+        columns = [row[1] for row in cursor.fetchall()]
+        if 'username' not in columns:
+            # Add username column to home_location
+            cursor.execute("ALTER TABLE home_location ADD COLUMN username TEXT DEFAULT 'default_user'")
+            conn.commit()
+    except Exception:
+        pass
+    
+    # Check if saved_places table exists and has username column
+    try:
+        cursor.execute("PRAGMA table_info(saved_places)")
+        columns = [row[1] for row in cursor.fetchall()]
+        if 'username' not in columns:
+            # Add username column to saved_places
+            cursor.execute("ALTER TABLE saved_places ADD COLUMN username TEXT DEFAULT 'default_user'")
+            conn.commit()
+    except Exception:
+        pass
+    
+    conn.close()
+
 def _init_db():
     """Initialize database schema if needed."""
     conn = _get_conn()
@@ -69,6 +98,9 @@ def _init_db():
     
     conn.commit()
     conn.close()
+    
+    # Run migrations after creating tables
+    _migrate_db()
 
 # Initialize on import
 _init_db()
