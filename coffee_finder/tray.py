@@ -1,13 +1,11 @@
 """System tray helper for Coffee Finder using pystray.
 
-Starts hidden GUI and provides tray icon with Open/Quit/Settings actions.
+Reuses root window from login, creates a tray icon with menu.
 """
 import threading
 import tkinter as tk
 from typing import Optional
 import pystray
-# disable default menu action globally so icon clicks don't auto-open GUI
-pystray.Icon.HAS_DEFAULT_ACTION = False
 from PIL import Image, ImageDraw
 import os
 
@@ -17,7 +15,7 @@ from .login import show_login
 
 
 def _make_image():
-    # create a simple coffee-bean style icon
+    """Create a simple coffee-bean style icon."""
     size = 64
     img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
@@ -30,54 +28,46 @@ def _make_image():
 
 class TrayApp:
     def __init__(self, username: str = "User", root: Optional[tk.Tk] = None):
-        self.root: Optional[tk.Tk] = root
-        self.icon: Optional[pystray.Icon] = None
-        self.settings_window: Optional[tk.Toplevel] = None
+        self.root = root
         self.username = username
-
+        self.gui_window = None
+        self.settings_window = None
+    
     def _open_gui(self, icon=None, item=None):
-        if self.root is None:
-            # This shouldn't happen, but handle gracefully
-            return
-        
-        # Create a new window for the GUI
-        gui_window = tk.Toplevel(self.root)
-        app = CoffeeFinderGUI(gui_window, self.username)
-        gui_window.deiconify()
-
-    def _get_hidden_root(self):
-        """Get or create the hidden root window."""
-        if self.root is None:
-            self.root = tk.Tk()
-            self.root.withdraw()
-        return self.root
-
+        """Open the main GUI window."""
+        if self.gui_window is None or not tk.Toplevel.winfo_exists(self.gui_window):
+            self.gui_window = tk.Toplevel(self.root)
+            app = CoffeeFinderGUI(self.gui_window, self.username)
+        else:
+            self.gui_window.lift()
+            self.gui_window.focus()
+    
     def _open_settings(self, icon=None, item=None):
-        """Open settings dialog from tray menu."""
+        """Open settings dialog."""
         if self.settings_window is not None:
             try:
                 self.settings_window.lift()
                 return
             except Exception:
                 pass
-
+        
         if self.root is None:
             return
-
+        
         dlg = tk.Toplevel(self.root)
         dlg.title("Coffee Finder Settings")
         self.settings_window = dlg
-
+        
         import tkinter.ttk as ttk
-
+        
         ttk.Label(dlg, text="Cache TTL (hours)").grid(row=0, column=0, sticky="w", padx=8, pady=6)
         ttl_hours = tk.DoubleVar(value=get_cache_ttl() / 3600.0)
         ttk.Entry(dlg, textvariable=ttl_hours).grid(row=0, column=1, padx=8, pady=6)
-
+        
         ttk.Label(dlg, text="Google Places API Key").grid(row=1, column=0, sticky="w", padx=8, pady=6)
         api_var = tk.StringVar(value=get_google_api_key() or os.environ.get("GOOGLE_PLACES_API_KEY") or "")
         ttk.Entry(dlg, textvariable=api_var, width=40).grid(row=1, column=1, padx=8, pady=6)
-
+        
         def on_save():
             try:
                 hours = float(ttl_hours.get())
@@ -97,25 +87,27 @@ class TrayApp:
             messagebox.showinfo("Saved", "Settings saved.")
             dlg.destroy()
             self.settings_window = None
-
+        
+        button_frame = ttk.Frame(dlg)
+        button_frame.grid(row=2, column=0, columnspan=2, pady=10)
+        ttk.Button(button_frame, text="Save", command=on_save).pack(side="left", padx=5)
+        ttk.Button(button_frame, text="Cancel", command=lambda: dlg.destroy()).pack(side="left", padx=5)
+        
         def on_close():
-            dlg.destroy()
             self.settings_window = None
-
-        btn_save = ttk.Button(dlg, text="Save", command=on_save)
-        btn_save.grid(row=2, column=0, columnspan=2, pady=(6, 6))
-
+        
         dlg.protocol("WM_DELETE_WINDOW", on_close)
-
+    
     def _quit(self, icon=None, item=None):
+        """Quit the application."""
         if self.settings_window:
             try:
                 self.settings_window.destroy()
             except Exception:
                 pass
-        if self.icon:
+        if self.gui_window:
             try:
-                self.icon.stop()
+                self.gui_window.destroy()
             except Exception:
                 pass
         if self.root:
@@ -123,51 +115,44 @@ class TrayApp:
                 self.root.quit()
             except Exception:
                 pass
-
+    
     def run(self):
-        # initialize hidden root if not provided
+        """Start the tray application."""
         if self.root is None:
             self.root = tk.Tk()
+        
+        # Hide the root window
         self.root.withdraw()
-
-        image = _make_image()
-        # build menu; no default action so clicks just show menu
+        
+        # Create tray menu
         menu = pystray.Menu(
-            pystray.MenuItem("Open", self._open_gui, default=False),
-            pystray.MenuItem("Settings", self._open_settings, default=False),
-            pystray.MenuItem("Quit", self._quit, default=False),
+            pystray.MenuItem("Open", self._open_gui),
+            pystray.MenuItem("Settings", self._open_settings),
+            pystray.MenuItem("Quit", self._quit),
         )
-        self.icon = pystray.Icon("coffee-finder", image, "Coffee Finder", menu)
-        # ensure instance honors flag as well
-        try:
-            self.icon.HAS_DEFAULT_ACTION = False
-        except Exception:
-            pass
-
-        # run the tray icon in a background thread; mainloop remains on root
-        t = threading.Thread(target=self.icon.run, daemon=True)
-        t.start()
-
-        # optionally intercept left-clicks to show popup menu instead of default action
-        def on_click(icon, item):
-            try:
-                icon.menu.run(icon, None)
-            except Exception:
-                pass
-        self.icon.onclick = on_click
-
-        # run tk mainloop in main thread
+        
+        # Create tray icon
+        image = _make_image()
+        icon = pystray.Icon("coffee-finder", image, "Coffee Finder", menu)
+        
+        # Run icon in a separate thread
+        icon_thread = threading.Thread(target=icon.run, daemon=True)
+        icon_thread.start()
+        
+        # Run root mainloop in main thread
         try:
             self.root.mainloop()
+        except Exception:
+            pass
         finally:
             try:
-                if self.icon:
-                    self.icon.stop()
+                icon.stop()
             except Exception:
                 pass
 
 
 def main(argv: Optional[list] = None):
+    """Entry point for tray application."""
     # Show login window
     authenticated, username, root_window = show_login()
     if not authenticated:
