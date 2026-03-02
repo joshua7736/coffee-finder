@@ -6,6 +6,8 @@ import threading
 import tkinter as tk
 from typing import Optional
 import pystray
+# disable default menu action globally so icon clicks don't auto-open GUI
+pystray.Icon.HAS_DEFAULT_ACTION = False
 from PIL import Image, ImageDraw
 import os
 
@@ -135,8 +137,11 @@ class TrayApp:
             pystray.MenuItem("Quit", self._quit, default=False),
         )
         self.icon = pystray.Icon("coffee-finder", image, "Coffee Finder", menu)
-        # prevent left-click from invoking default menu item (Open)
-        self.icon.HAS_DEFAULT_ACTION = False
+        # ensure instance honors flag as well
+        try:
+            self.icon.HAS_DEFAULT_ACTION = False
+        except Exception:
+            pass
 
         # run the tray icon in a background thread; mainloop remains on root
         t = threading.Thread(target=self.icon.run, daemon=True)
