@@ -315,11 +315,12 @@ class CoffeeFinderGUI:
 
 def main(argv: Optional[list] = None):
     # Show login window
-    authenticated, username = show_login()
+    authenticated, username, root = show_login()
     if not authenticated:
         return
     
-    root = tk.Tk()
+    if root is None:
+        root = tk.Tk()
     app = CoffeeFinderGUI(root, username)
     root.mainloop()
 

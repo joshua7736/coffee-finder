@@ -139,12 +139,12 @@ class LoginWindow:
             messagebox.showerror("Registration Failed", message)
     
     def show(self):
-        """Show the login window and return (success, username)."""
+        """Show the login window and return (success, username, window)."""
         self.window.mainloop()
-        return self.authenticated, self.username
+        return self.authenticated, self.username, self.window
 
 
-def show_login() -> Tuple[bool, Optional[str]]:
-    """Show login window and return (authenticated, username)."""
+def show_login() -> Tuple[bool, Optional[str], Optional[tk.Tk]]:
+    """Show login window and return (authenticated, username, root_window)."""
     login = LoginWindow()
     return login.show()

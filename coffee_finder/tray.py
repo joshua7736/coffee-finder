@@ -29,8 +29,8 @@ def _make_image():
 
 
 class TrayApp:
-    def __init__(self, username: str = "User"):
-        self.root: Optional[tk.Tk] = None
+    def __init__(self, username: str = "User", root: Optional[tk.Tk] = None):
+        self.root: Optional[tk.Tk] = root
         self.icon: Optional[pystray.Icon] = None
         self.settings_window: Optional[tk.Toplevel] = None
         self.username = username
@@ -125,8 +125,9 @@ class TrayApp:
                 pass
 
     def run(self):
-        # initialize hidden root
-        self.root = tk.Tk()
+        # initialize hidden root if not provided
+        if self.root is None:
+            self.root = tk.Tk()
         self.root.withdraw()
 
         image = _make_image()
@@ -168,11 +169,11 @@ class TrayApp:
 
 def main(argv: Optional[list] = None):
     # Show login window
-    authenticated, username = show_login()
+    authenticated, username, root_window = show_login()
     if not authenticated:
         return
     
-    app = TrayApp(username)
+    app = TrayApp(username, root_window)
     app.run()
 
 
