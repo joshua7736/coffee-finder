@@ -5,7 +5,7 @@ from typing import List
 import requests
 
 from .providers import choose_provider, search_google_places
-from .utils import parse_latlng
+from .utils import parse_latlng, parse_what3words
 
 
 def detect_location_by_ip() -> tuple:
@@ -38,6 +38,7 @@ def main(argv: List[str] = None):
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--latlng", help="Latitude,Longitude (e.g. 40.7128,-74.0060)")
     group.add_argument("--address", help="Address to geocode (uses Nominatim)")
+    group.add_argument("--what3words", help="what3words location (e.g. ///light.dog.cat)")
     parser.add_argument("--lat", type=float, help="Latitude (use with --lng)")
     parser.add_argument("--lng", type=float, help="Longitude (use with --lat)")
     parser.add_argument("--radius", type=int, default=1000, help="Search radius in meters (default 1000)")
@@ -57,6 +58,9 @@ def main(argv: List[str] = None):
         if not res:
             raise RuntimeError("Address not found")
         lat = float(res[0]["lat"]) ; lng = float(res[0]["lon"])
+    elif args.what3words:
+        # convert what3words to coordinates
+        lat, lng = parse_what3words(args.what3words)
     else:
         lat, lng = detect_location_by_ip()
 
